@@ -105,7 +105,24 @@ contract Tracking {
 
         emit ShipmentDelivered(_sender, _receiver, shipment.deliveryTime);// this is to emit the event that the shipment has completed
         emit ShipmentPaid(_sender, _receiver, amount);
-        
+
+    }
+
+
+    function getShipment(address _sender, uint256 _index) public view returns (address, address, uint256, uint256, uint256, uint256, ShipmentStatus, bool){
+        Shipment memory shipment = shipments[_sender][_index]; // this is to get the shipment from the mapping
+        return (shipment.sender, Shipment.distance , shipment.price, shipment.status, shipment.isPaid);// we are returning all the data of the shipment
+    }
+
+    function getShipmentsCount(address _sender) public view returns (uint256) {
+        return shipments[_sender].length;
+    } // this will give us the number of the shipment that are created by the user
+
+    function getAllTransactions()
+    public view
+    returns (TypeShipment[] memory)//  we are using the memory keyword to return the data of the shipment
+    {
+        return TypeShipment;
     }
 
     
