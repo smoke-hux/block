@@ -16,7 +16,7 @@ contract Tracking {
         bool isPaid;
     }
 
-    mapping(address => Shipment) public shipments; // mapping from sender to shipment info
+    mapping(address => Shipment[]) public shipments; // mapping from sender to shipment info
     uint256 public shipmentCount; // this will keep track of the number of the shipment we are tracking
 
     struct TypeShipment {
@@ -30,7 +30,7 @@ contract Tracking {
         bool isPaid;
     }
 
-    TypeShipment[] Shipments;
+    TypeShipment[] public Shipments;
 
     event ShipmentCreated(address indexed sender, address indexed receiver, uint256 pickupTime, uint256 distance, uint256 price);
     
@@ -59,6 +59,7 @@ contract Tracking {
                 _receiver,
                 _pickupTime,
                 0,
+                _price,
                 _distance,
                 ShipmentStatus.PENDING,
                 false
