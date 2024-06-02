@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.19;
 
-contract Tracking {
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+
+contract Tracking is Ownable, ReentrancyGuard, Pausable {
+    using SafeCast for uint256;
+
     enum ShipmentStatus { PENDING, IN_TRANSIT, DELIVERED }
 
     struct Shipment {
@@ -15,7 +22,7 @@ contract Tracking {
         bool isPaid;
     }
 
-    mapping(address => Shipment[]) public shipments;// mapping from sender to shipment info
+    mapping(address => Shipment[]) public shipments;
     uint256 public shipmentCount;
 
     struct TypeShipment {
@@ -35,11 +42,11 @@ contract Tracking {
     event ShipmentDelivered(address indexed sender, address indexed receiver, uint256 deliveryTime);
     event ShipmentPaid(address indexed sender, address indexed receiver, uint256 amount);
 
-    constructor() {
+    constructor() Ownable(msg.sender) {
         shipmentCount = 0;
     }
 
-    function createShipment(address _receiver, uint256 _pickupTime, uint256 _distance, uint256 _price) public payable {
+    function createShipment(address _receiver, uint256 _pickupTime, uint256 _distance, uint256 _price) public payable whenNotPaused nonReentrant {
         require(msg.value == _price, "Incorrect payment");
 
         Shipment memory shipment = Shipment(
@@ -71,7 +78,7 @@ contract Tracking {
         emit ShipmentCreated(msg.sender, _receiver, _pickupTime, _distance, _price);
     }
 
-    function startShipment(address _sender, address _receiver, uint256 _index) public {
+    function startShipment(address _sender, address _receiver, uint256 _index) public onlyOwner whenNotPaused {
         Shipment storage shipment = shipments[_sender][_index];
         require(shipment.receiver == _receiver, "Wrong receiver.");
         require(shipment.status == ShipmentStatus.PENDING, "Shipment already started.");
@@ -81,7 +88,7 @@ contract Tracking {
         emit ShipmentInTransit(_sender, _receiver, shipment.pickupTime);
     }
 
-    function completeShipment(address _sender, address _receiver, uint256 _index) public {
+    function completeShipment(address _sender, address _receiver, uint256 _index) public onlyOwner whenNotPaused nonReentrant {
         Shipment storage shipment = shipments[_sender][_index];
         require(shipment.receiver == _receiver, "Invalid receiver.");
         require(shipment.status == ShipmentStatus.IN_TRANSIT, "Shipment is not in transit yet.");
@@ -100,12 +107,20 @@ contract Tracking {
         emit ShipmentPaid(_sender, _receiver, amount);
     }
 
-     function getShipment(address _sender , uint256 _index) public view returns (address, address, uint256, uint256, uint256, uint256, ShipmentStatus, bool){
+    function getShipment(address _sender, uint256 _index) public view returns (address, address, uint256, uint256, uint256, uint256, ShipmentStatus, bool) {
         Shipment memory shipment = shipments[_sender][_index];
         return (shipment.sender, shipment.receiver, shipment.pickupTime, shipment.deliverTime, shipment.distance, shipment.price, shipment.status, shipment.isPaid);
     }
 
     function getAllTransactions() public view returns (TypeShipment[] memory) {
         return typeShipments;
+    }
+
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
     }
 }

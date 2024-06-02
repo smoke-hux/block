@@ -6,7 +6,7 @@ import { ethers } from "ethers";
 
 import Tracking from "./Tracking.json";
 import { setBlockGasLimit } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-const ContractAddress = "0x296179DF9077b197fAc68e5714BE9B4FB4Ab7CFA";
+const ContractAddress = "0x12Fa95aB6705830b39F979b2BE6245d36bF844a8";
 const ContractABI = Tracking.abi;
 
 

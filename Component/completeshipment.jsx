@@ -1,9 +1,9 @@
-import React from "react";
+import React from 'react'
 
-const Completeshipment = () => {
-    return <div>
-        Completeshipment
-    </div>
-};
+const completeshipment = () => {
+  return (
+    <div>completeshipment</div>
+  )
+}
 
-export default Completeshipment;
+export default completeshipment
